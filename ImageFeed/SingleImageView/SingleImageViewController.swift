@@ -34,7 +34,7 @@ final class SingleImageViewController: UIViewController {
     }
     
     
-    @IBAction func didTapShareButton(_ sender: UIButton) {
+    @IBAction private func didTapShareButton(_ sender: UIButton) {
         guard let image else { return }
         let share = UIActivityViewController(
             activityItems: [image],
@@ -42,7 +42,7 @@ final class SingleImageViewController: UIViewController {
         )
         present(share, animated: true, completion: nil)
     }
-    @IBAction func didTapBackButton() {
+    @IBAction private func didTapBackButton() {
         dismiss(animated: true, completion: nil)
     }
     
@@ -68,6 +68,6 @@ final class SingleImageViewController: UIViewController {
 
 extension SingleImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return imageView
+        imageView
     }
 }
