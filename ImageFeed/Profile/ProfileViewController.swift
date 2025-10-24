@@ -8,7 +8,7 @@
 import UIKit
 
 final class ProfileViewController: UIViewController {
-    private let profilePhotoView = UIImageView(image: UIImage(named: "profilePhoto"))
+    private let profilePhotoView = UIImageView(image: UIImage(resource: .profilePhoto))
     private let nameLabel = UILabel()
     private let loginLabel = UILabel()
     private let descriptionLabel = UILabel()
@@ -22,7 +22,7 @@ final class ProfileViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .black
+        view.backgroundColor = UIColor(hex: "#1A1B22")
         profilePhotoView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(profilePhotoView)
         
@@ -45,7 +45,7 @@ final class ProfileViewController: UIViewController {
         view.addSubview(descriptionLabel)
         
         logoutButton = UIButton.systemButton(
-            with: UIImage(named: "exitButton")!,
+            with: UIImage(resource: .exitButton),
             target: self,
             action: #selector(logoutButtonTapped))
         logoutButton.tintColor = UIColor(hex: "#F56B6C")
