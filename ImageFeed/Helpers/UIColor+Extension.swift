@@ -1,10 +1,3 @@
-//
-//  UIColor+Extension.swift
-//  ImageFeed
-//
-//  Created by Kristina Kostenko on 21.10.2025.
-//
-
 import UIKit
 
 extension UIColor {

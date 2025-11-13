@@ -1,10 +1,3 @@
-//
-//  ViewController.swift
-//  ImageFeed
-//
-//  Created by Kristina Kostenko on 04.10.2025.
-//
-
 import UIKit
 
 final class ImagesListViewController: UIViewController {
@@ -39,9 +32,9 @@ final class ImagesListViewController: UIViewController {
         
         
         if indexPath.row % 2 == 0 {
-            cell.likeButton.setImage(UIImage(named: "likeButtonActive"), for: .normal)
+            cell.likeButton.setImage(UIImage(resource: .likeButtonActive), for: .normal)
         } else {
-            cell.likeButton.setImage(UIImage(named: "likeButtonNoActive"), for: .normal)
+            cell.likeButton.setImage(UIImage(resource: .likeButtonNoActive), for: .normal)
         }
     }
     
