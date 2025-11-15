@@ -111,7 +111,7 @@
                             <constraint firstAttribute="top" secondItem="CC7-Xz-uid" secondAttribute="top" id="vHu-DQ-O2y"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Item" id="zu5-Qi-vsJ"/>
+                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="zu5-Qi-vsJ"/>
                     <navigationItem key="navigationItem" id="CMf-Rn-3wy"/>
                     <connections>
                         <outlet property="tableView" destination="CC7-Xz-uid" id="jyQ-5N-nsq"/>
@@ -349,6 +349,7 @@
         <image name="likeButtonActive" width="44" height="44"/>
         <image name="nav_back_button_white" width="24" height="24"/>
         <image name="sharing_button" width="50" height="50"/>
+        <image name="tab_editorial_active" width="30" height="30"/>
         <image name="tab_profile_active" width="30" height="30"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
