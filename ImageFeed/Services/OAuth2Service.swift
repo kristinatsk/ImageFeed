@@ -30,7 +30,9 @@ final class OAuth2Service {
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         guard let request = makeOAuthTokenRequest(code: code) else {
             print("Ошибка: не удалось создать URLRequest")
-            completion(.failure(NetworkError.invalidRequest))
+            DispatchQueue.main.async {
+                completion(.failure(NetworkError.invalidRequest))
+            }
             return
         }
         
@@ -43,12 +45,18 @@ final class OAuth2Service {
                     print("Успешно получен токен: \(response.accessToken)")
             
                     OAuth2TokenStorage().token = response.accessToken
-                    completion(.success(response.accessToken))
+                
+                    DispatchQueue.main.async {
+                        completion(.success(response.accessToken))
+                    }
                 } catch {
                     print("Ошибка декодирования JSON: \(error)")
                     print("Ответ сервера (при ошибке декодирования):")
                     print(String(data: data, encoding: .utf8) ?? "Пустой ответ")
-                    completion(.failure(NetworkError.decodingError(error)))
+                    
+                    DispatchQueue.main.async {
+                        completion(.failure(NetworkError.decodingError(error)))
+                    }
                 }
                 
             case .failure(let error):
@@ -64,7 +72,9 @@ final class OAuth2Service {
                 default:
                     print("Неизвестная ошибка \(error)")
                 }
-                completion(.failure(error))
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
             }
         }
         task.resume()
