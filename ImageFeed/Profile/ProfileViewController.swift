@@ -1,37 +1,58 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
-    private let profilePhotoView = UIImageView(image: UIImage(resource: .profilePhoto))
+    private var profilePhotoView = UIImageView(image: UIImage(resource: .profilePhoto))
     private let nameLabel = UILabel()
     private let loginLabel = UILabel()
     private let descriptionLabel = UILabel()
     private var logoutButton = UIButton()
+    private var profileImageServiceObserver: NSObjectProtocol?
                                                
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
         
+        if let profile = ProfileService.shared.profile {
+            updateProfileDetails(profile: profile)
+        }
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                
+                guard let self = self else { return }
+                self.updateAvatar()
+                
+            }
+        updateAvatar()
+        
     }
+    
+    
     
     private func setupUI() {
         view.backgroundColor = UIColor(hex: "#1A1B22")
         profilePhotoView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(profilePhotoView)
         
-        nameLabel.text = "Екатерина Новикова"
+        nameLabel.text = "Имя не указано"
         nameLabel.textColor = UIColor(hex: "#FFFFFF")
         nameLabel.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(nameLabel)
         
-        loginLabel.text = "@ekaterina_nov"
+        loginLabel.text = "@неизвестный_пользователь"
         loginLabel.textColor = UIColor(hex: "#AEAFB4")
         loginLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         loginLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(loginLabel)
         
-        descriptionLabel.text = "Hello, world!"
+        descriptionLabel.text = "Профиль не заполнен"
         descriptionLabel.textColor = UIColor(hex: "#FFFFFF")
         descriptionLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -73,6 +94,45 @@ final class ProfileViewController: UIViewController {
     }
     
 
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        print("imageURL: \(url)")
+        
+        let placeholderImage = UIImage(systemName: "person.circle.fill")?
+            .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 70, weight: .regular, scale: .large))
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profilePhotoView.kf.indicatorType = .activity
+        profilePhotoView.kf.setImage(with: url,
+                                     placeholder: placeholderImage,
+                                     options: [.processor(processor)]
+        ) { result in
+            
+            switch result {
+            case .success(let value):
+                print(value.image)
+                
+                print(value.cacheType)
+                print(value.source)
+            case .failure(let error):
+                print(error)
+            }
+            
+        }
+        
+    
+    }
+
+    
+    private func updateProfileDetails(profile: Profile) {
+        nameLabel.text = profile.name.isEmpty ? "Имя не указано" : profile.name
+        loginLabel.text = profile.loginName.isEmpty ? "@пользователь не указан" : profile.loginName
+        descriptionLabel.text = (profile.bio?.isEmpty ?? true) ? "Профиль пуст" : profile.bio
+    }
+    
     @objc
     private func logoutButtonTapped() {
         
