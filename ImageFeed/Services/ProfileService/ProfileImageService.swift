@@ -1,25 +1,5 @@
 import UIKit
 
-struct ProfileImage: Codable {
-    let small: String
-    let medium: String
-    let large: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case small
-        case medium
-        case large
-        
-    }
-}
-
-struct UserResult: Codable {
-    let profileImage: ProfileImage
-    
-    private enum CodingKeys: String, CodingKey {
-        case profileImage = "profile_image"
-    }
-}
 
 final class ProfileImageService {
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
@@ -47,11 +27,13 @@ final class ProfileImageService {
         
         task?.cancel()
         guard let token = OAuth2TokenStorage.shared.token else {
-            completion(.failure(NSError(domain: "ProfileImageService", code: 401, userInfo: [NSLocalizedDescriptionKey: "Authorization token missing"])))
+            print("[ProfileImageService.fetchProfileImageURL]: AuthError - authorization token missing")
+            completion(.failure(URLError(.userAuthenticationRequired)))
             return
         }
         
         guard let request = makeProfileImageRequest(username: username, token: token) else {
+            print("[ProfileImageService.fetchProfileImageURL]: URLError.badURL - failed to build request")
             completion(.failure(URLError(.badURL)))
             return
         }
@@ -60,22 +42,22 @@ final class ProfileImageService {
             
             switch result {
             case .success(let userResult):
-                guard let self else { return }
-              
-                    self.avatarURL = userResult.profileImage.small
-                    completion(.success(userResult.profileImage.small))
-                    NotificationCenter.default
-                        .post(
-                            name: ProfileImageService.didChangeNotification,
-                            object: self,
-                            userInfo: ["URL": userResult.profileImage.small])
-
+                
+                
+                self?.avatarURL = userResult.profileImage.small
+                completion(.success(userResult.profileImage.small))
+                NotificationCenter.default
+                    .post(
+                        name: ProfileImageService.didChangeNotification,
+                        object: self,
+                        userInfo: ["URL": userResult.profileImage.small])
+                
                 
             case .failure(let error):
                 print("[fetchProfileImageURL]: Request error: \(error.localizedDescription)")
                 completion(.failure(error))
             }
-           
+            
         }
         self.task = task
         task.resume()

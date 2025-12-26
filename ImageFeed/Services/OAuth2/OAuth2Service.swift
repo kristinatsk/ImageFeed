@@ -23,6 +23,7 @@ final class OAuth2Service {
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard lastCode != code else {
+            print("[OAuth2Service.fetchOAuthToken]: AuthServiceError.invalidRequest - code reused")
             completion(.failure(AuthServiceError.invalidRequest))
             return
         }
@@ -32,17 +33,16 @@ final class OAuth2Service {
         guard
             let request = makeOAuthTokenRequest(code: code)
         else {
-            print("Ошибка: не удалось создать URLRequest")
+            print("[OAuth2Service.makeOAuthTokenRequest]: AuthServiceError.invalidRequest - code: \(code)")
             completion(.failure(AuthServiceError.invalidRequest))
             
             return
         }
         
-        
         let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
             DispatchQueue.main.async {
-                UIBlockingProgressHUD.dismiss()//возможно не нужно
                 guard let self else {
+                    print("[OAuth2Service.fetchOAuthToken]: NetworkError.urlSessionError - self deallocated")
                     completion(.failure(NetworkError.urlSessionError))
                     return
                 }
@@ -53,7 +53,7 @@ final class OAuth2Service {
                     completion(.success(body.accessToken))
                     
                 case .failure(let error):
-                    print("[fetchOAuthToken]: Request error: \(error.localizedDescription)")
+                    print("[OAuth2Service.fetchOAuthToken]: \(type(of: error)) - \(error)")
                     completion(.failure(error))
                 }
 
@@ -68,7 +68,7 @@ final class OAuth2Service {
     }
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
-        guard var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token") else {
+        guard var urlComponents = URLComponents(url: Constants.oauthTokenURL, resolvingAgainstBaseURL: false) else {
             assertionFailure("Failed to create URL")
             return nil
         }
@@ -105,10 +105,12 @@ extension OAuth2Service {
                     let body = try decoder.decode(OAuthTokenResponseBody.self, from: data)
                     completion(.success(body))
                 } catch {
+                    print("[OAuth2Service.object]: NetworkError.decodingError - failed to decode response")
                     completion(.failure(NetworkError.decodingError(error)))
                 }
                 
             case .failure(let error):
+                print("[OAuth2Service.object]: \(type(of: error)) - \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }

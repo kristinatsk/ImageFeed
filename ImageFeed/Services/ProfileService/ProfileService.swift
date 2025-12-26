@@ -49,6 +49,7 @@ final class ProfileService {
        
         task?.cancel()
         guard let request = makeProfileRequest(token: token) else {
+            print("[ProfileService.fetchProfile]: URLError - failed to build request")
             completion(.failure(URLError(.badURL)))
             return
         }
@@ -69,7 +70,7 @@ final class ProfileService {
                     
                
             case .failure(let error):
-                print("[fetchProfile]: Request error: \(error.localizedDescription)")
+                print("[ProfileService.fetchProfile]: \(type(of: error)) - \(error.localizedDescription)")
                 completion(.failure(error))
             }
             self?.task = nil

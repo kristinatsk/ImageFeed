@@ -1,5 +1,4 @@
 import UIKit
-import ProgressHUD
 
 protocol AuthViewControllerDelegate: AnyObject {
     func didAuthenticate(_ vc: AuthViewController)
@@ -47,7 +46,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
         
             UIBlockingProgressHUD.dismiss()
             
-            guard let self = self else { return }
+            guard let self else { return }
             
             switch result {
             case .success:
@@ -77,7 +76,7 @@ extension AuthViewController {
 extension AuthViewController {
     func showAuthErrorAlert() {
         let alert = UIAlertController(
-            title: "Что-то пошло не так",
+            title: "Что-то пошло не так(",
             message: "Не удалось войти в систему",
             preferredStyle: .alert)
         

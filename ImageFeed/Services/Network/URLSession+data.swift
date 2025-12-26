@@ -2,6 +2,8 @@ import Foundation
 enum NetworkError: Error {
     case httpStatusCode(Int)
     case urlRequestError(Error)
+    case invalidResponse
+    case emptyData
     case urlSessionError
     case invalidRequest
     case decodingError(Error)
@@ -17,21 +19,28 @@ extension URLSession {
                 completion(result)
             }
         }
-        let task = dataTask(with: request, completionHandler: { data, response, error in
-            if let data = data, let response = response, let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                if 200 ..< 300 ~= statusCode {
-                    fulfillCompletionOnTheMainThread(.success(data))
-                } else {
-                    fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
-                }
-            } else if let error = error {
+        return dataTask(with: request) { data, response, error in
+            
+            if let error = error {
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
-            } else {
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
+                return
             }
-        })
-        
-        return task
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                fulfillCompletionOnTheMainThread(.failure(NetworkError.invalidResponse))
+                return
+            }
+            
+            guard (200..<300).contains(httpResponse.statusCode) else {
+                fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(httpResponse.statusCode)))
+                return
+            }
+            guard let data = data, !data.isEmpty else {
+                fulfillCompletionOnTheMainThread(.failure(NetworkError.emptyData))
+                return
+            }
+            fulfillCompletionOnTheMainThread(.success(data))
+        }
     }
 }
 

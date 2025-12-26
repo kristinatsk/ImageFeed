@@ -2,11 +2,50 @@ import UIKit
 import Kingfisher
 
 final class ProfileViewController: UIViewController {
-    private var profilePhotoView = UIImageView(image: UIImage(resource: .profilePhoto))
-    private let nameLabel = UILabel()
-    private let loginLabel = UILabel()
-    private let descriptionLabel = UILabel()
-    private var logoutButton = UIButton()
+    private let profilePhotoView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(resource: .profilePhoto))
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private let nameLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Имя не указано"
+        label.textColor = UIColor(hex: "#FFFFFF")
+        label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let loginLabel: UILabel = {
+        let label = UILabel()
+        label.text = "@неизвестный_пользователь"
+        label.textColor = UIColor(hex: "#AEAFB4")
+        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Профиль не заполнен"
+        label.textColor = UIColor(hex: "#FFFFFF")
+        label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private var logoutButton: UIButton = {
+        let button = UIButton.systemButton(
+            with: UIImage(resource: .exitButton),
+            target: self,
+            action: #selector(logoutButtonTapped)
+        )
+        button.tintColor = UIColor(hex: "#F56B6C")
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private var profileImageServiceObserver: NSObjectProtocol?
                                                
     override func viewDidLoad() {
@@ -25,7 +64,7 @@ final class ProfileViewController: UIViewController {
                 queue: .main
             ) { [weak self] _ in
                 
-                guard let self = self else { return }
+                guard let self else { return }
                 self.updateAvatar()
                 
             }
@@ -37,34 +76,12 @@ final class ProfileViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = UIColor(hex: "#1A1B22")
-        profilePhotoView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(profilePhotoView)
         
-        nameLabel.text = "Имя не указано"
-        nameLabel.textColor = UIColor(hex: "#FFFFFF")
-        nameLabel.font = UIFont.systemFont(ofSize: 23, weight: .bold)
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(nameLabel)
+        [profilePhotoView, nameLabel, loginLabel, descriptionLabel, logoutButton].forEach {
+            view.addSubview($0)
+        }
         
-        loginLabel.text = "@неизвестный_пользователь"
-        loginLabel.textColor = UIColor(hex: "#AEAFB4")
-        loginLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        loginLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(loginLabel)
         
-        descriptionLabel.text = "Профиль не заполнен"
-        descriptionLabel.textColor = UIColor(hex: "#FFFFFF")
-        descriptionLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(descriptionLabel)
-        
-        logoutButton = UIButton.systemButton(
-            with: UIImage(resource: .exitButton),
-            target: self,
-            action: #selector(logoutButtonTapped))
-        logoutButton.tintColor = UIColor(hex: "#F56B6C")
-        logoutButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(logoutButton)
         
         NSLayoutConstraint.activate([
             profilePhotoView.widthAnchor.constraint(equalToConstant: 70),
@@ -104,11 +121,12 @@ final class ProfileViewController: UIViewController {
         let placeholderImage = UIImage(systemName: "person.circle.fill")?
             .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
             .withConfiguration(UIImage.SymbolConfiguration(pointSize: 70, weight: .regular, scale: .large))
-        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profilePhotoView.layer.cornerRadius = 35
+        profilePhotoView.clipsToBounds = true
         profilePhotoView.kf.indicatorType = .activity
         profilePhotoView.kf.setImage(with: url,
                                      placeholder: placeholderImage,
-                                     options: [.processor(processor)]
+                                     options: [.forceRefresh]
         ) { result in
             
             switch result {
@@ -120,10 +138,7 @@ final class ProfileViewController: UIViewController {
             case .failure(let error):
                 print(error)
             }
-            
         }
-        
-    
     }
 
     

@@ -10,9 +10,7 @@ final class SplashViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setupImageView()
-        
         if let token = storage.token {
-            switchToTabBarController()
             fetchProfile(token)
         } else {
             presentAuthViewController()
@@ -74,16 +72,17 @@ final class SplashViewController: UIViewController {
         profileService.fetchProfile(token: token) { [weak self] result in
             UIBlockingProgressHUD.dismiss()
             
-            guard let self = self else { return }
             
             switch result {
             case let .success(profile):
-                ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { _ in }
-                self.switchToTabBarController()
+                ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { _ in
+                    self?.switchToTabBarController()
+                }
+                
                 
             case .failure(let error):
                 print(error)
-                break
+                self?.storage.token = nil
             }
             
         }
@@ -95,7 +94,8 @@ final class SplashViewController: UIViewController {
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ vc: AuthViewController) {
         vc.dismiss(animated: true)
-        switchToTabBarController()
+        guard let token = storage.token else { return }
+        fetchProfile(token)
                 
     }
 }
