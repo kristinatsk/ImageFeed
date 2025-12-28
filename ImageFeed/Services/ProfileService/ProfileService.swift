@@ -66,6 +66,13 @@ final class ProfileService {
                         bio: result.bio
                     )
                     self?.profile = profile
+                
+                ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { avatarResult in
+                
+                    if case .failure(let error) = avatarResult {
+                        print("[ProfileService.fetchProfile]: Failed to fetch avatar URL — \(error.localizedDescription)")
+                    }
+                }
                     completion(.success(profile))
                     
                
