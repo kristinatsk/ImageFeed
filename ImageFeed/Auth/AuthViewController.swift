@@ -38,19 +38,24 @@ final class AuthViewController: UIViewController {
 }
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
+        vc.dismiss(animated: true)
         
+        UIBlockingProgressHUD.show()
         
         oAuth2Service.fetchOAuthToken(code: code) { [weak self] result in
         
-            guard let self = self else { return }
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
             
             switch result {
             case .success:
-                
                 self.delegate?.didAuthenticate(self)
             case .failure(let error):
                 print("Ошибка при аутентификации \(error.localizedDescription)")
+                self.showAuthErrorAlert()
             }
+            
         }
     }
     
@@ -65,5 +70,19 @@ extension AuthViewController {
         oAuth2Service.fetchOAuthToken(code: code) { result in
             completion(result)
         }
+    }
+}
+
+extension AuthViewController {
+    func showAuthErrorAlert() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так(",
+            message: "Не удалось войти в систему",
+            preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
     }
 }
