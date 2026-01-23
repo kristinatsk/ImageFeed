@@ -6,8 +6,8 @@ struct PhotoResult: Codable {
     let width: Int
     let height: Int
     let createdAt: Date?
-    let welcomeDescription: String
-    let isLiked: Bool
+    let welcomeDescription: String?
+    let isLiked: Bool?
     let urls: UrlsResult
     
     var size: CGSize{
@@ -29,7 +29,7 @@ struct PhotoResult: Codable {
             welcomeDescription: welcomeDescription,
             thumbImageURL: thumbImageURL,
             largeImageURL: largeImageURL,
-            isLiked: isLiked)
+            isLiked: isLiked ?? false)
     }
     
     private enum CodingKeys: String, CodingKey {

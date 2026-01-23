@@ -8,6 +8,7 @@ final class ImagesListService {
     private var lastLoadedPage: Int?
     private var task: URLSessionTask?
     private let perPage = 10
+    static let shared = ImagesListService()
     private let urlSession = URLSession.shared
     
     func fetchPhotosNextPage() {
