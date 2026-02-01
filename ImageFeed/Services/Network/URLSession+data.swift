@@ -7,6 +7,7 @@ enum NetworkError: Error {
     case urlSessionError
     case invalidRequest
     case decodingError(Error)
+    case photoNotFound
 }
 
 extension URLSession {

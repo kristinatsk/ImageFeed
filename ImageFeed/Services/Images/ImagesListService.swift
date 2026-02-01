@@ -11,21 +11,26 @@ final class ImagesListService {
     static let shared = ImagesListService()
     private let urlSession = URLSession.shared
     
+    func makeImageRequest(path: String, httpMethod: String) -> URLRequest? {
+        guard let url = URL(string: "https://api.unsplash.com\(path)") else {
+            return nil
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod
+        request.setValue("Client-ID \(Constants.accessKey)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+    
     func fetchPhotosNextPage() {
         
         guard task == nil else { return }
         let nextPage = (lastLoadedPage ?? 0) + 1
         
-        guard var urlComponents = URLComponents(string: "https://api.unsplash.com/photos") else { return }
-        urlComponents.queryItems = [
-            URLQueryItem(name: "page", value: "\(nextPage)"),
-            URLQueryItem(name: "per_page", value: "\(perPage)")
-        ]
-        guard let url = urlComponents.url else { return }
+        let path = "/photos?page=\(nextPage)&per_page=\(perPage)"
         
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Client-ID \(Constants.accessKey)", forHTTPHeaderField: "Authorization")
+        guard let request = makeImageRequest(path: path, httpMethod: "GET") else { return }
+        
         
         task = urlSession.dataTask(with: request) { [weak self] data, response, error in
         
@@ -55,5 +60,54 @@ final class ImagesListService {
             }
         }
         task?.resume()
+    }
+    
+    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+        let requestPath = "https://api.unsplash.com/photos/\(photoId)/like"
+        let httpMethod = isLike ? "POST" : "DELETE"
+        
+        guard let request = makeImageRequest(path: requestPath, httpMethod: httpMethod) else {
+            completion(.failure(NetworkError.invalidRequest))
+            return
+        }
+        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+            
+            guard let self = self else { return }
+            
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
+                completion(.failure(NetworkError.invalidRequest))
+                return
+            }
+            
+            DispatchQueue.main.async {
+                
+                    if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
+                        let photo = self.photos[index]
+
+                        let newPhoto = Photo(
+                            id: photo.id,
+                            size: photo.size,
+                            createdAt: photo.createdAt,
+                            welcomeDescription: photo.welcomeDescription,
+                            thumbImageURL: photo.thumbImageURL,
+                            largeImageURL: photo.largeImageURL,
+                            isLiked: !photo.isLiked
+                        )
+                        
+                        self.photos = self.photos.withReplaced(itemAt: index, newValue: newPhoto)
+                        completion(.success(()))
+                    } else {
+                        completion(.failure(NetworkError.photoNotFound))
+                    }
+                    
+            }
+            
+        }
+        task.resume()
     }
 }
