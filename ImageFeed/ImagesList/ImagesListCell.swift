@@ -1,7 +1,7 @@
 import UIKit
 
-protocol ImagesListServiceDelegate: AnyObject {
-    func imageListCellDidTaplike(_ cell: ImagesListCell)
+protocol ImagesListCellDelegate: AnyObject {
+    func imageListCellDidTapLike(_ cell: ImagesListCell)
 }
 
 final class ImagesListCell: UITableViewCell {
@@ -11,7 +11,13 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var dateLabel: UILabel!
     
+    weak var delegate: ImagesListCellDelegate?
     
-    @IBAction func likeButtonClicked(_ sender: UIButton) {
+    @IBAction func likeButtonClicked() {
+        delegate?.imageListCellDidTapLike(self)
+    }
+    
+    func setIsLiked(_ isLiked: Bool) {
+        isLiked ? likeButton.setImage(UIImage(resource: .likeButtonActive), for: .normal) : likeButton.setImage(UIImage(resource: .likeButtonNoActive), for: .normal)
     }
 }
