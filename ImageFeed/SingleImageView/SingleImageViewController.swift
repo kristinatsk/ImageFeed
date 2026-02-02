@@ -12,15 +12,7 @@ final class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
-        if let url = fullImageURL {
-            imageView.kf.setImage(with: url) { [weak self] result in
-                guard let self, case let .success(value) = result else { return }
-                let image = value.image
-                imageView.image = image
-                imageView.frame.size = image.size
-                rescaleAndCenterImageInScrollView(image: image)
-            }
-        }
+        loadImage()
        
     }
     
@@ -53,6 +45,38 @@ final class SingleImageViewController: UIViewController {
         let y = (newContentSize.height - visibleRectSize.height) / 2
         scrollView.setContentOffset(CGPoint(x: x, y: y), animated: false)
         
+    }
+    
+    private func loadImage() {
+        guard let url = fullImageURL else { return }
+        UIBlockingProgressHUD.show()
+        imageView.kf.setImage(with: url) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            switch result {
+            case .success(let value):
+                let image = value.image
+                imageView.image = image
+                imageView.frame.size = image.size
+                rescaleAndCenterImageInScrollView(image: image)
+            case .failure:
+                self.showError()
+            }
+        }
+    }
+    
+    func showError() {
+        let alert = UIAlertController(
+            title: "Что-то пошло не так(",
+            message: "Попробовать еще раз?",
+            preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Не надо", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Повторить", style: .default) { [weak self] _ in
+            self?.loadImage()
+        })
+        present(alert, animated: true)
     }
     
 }
