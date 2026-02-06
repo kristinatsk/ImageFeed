@@ -1,7 +1,6 @@
 import UIKit
 
 
-
 final class ImagesListService {
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     private(set) var photos: [Photo] = []
@@ -109,5 +108,11 @@ final class ImagesListService {
             
         }
         task.resume()
+    }
+    func reset() {
+        photos = []
+        lastLoadedPage = nil
+        task?.cancel()
+        task = nil
     }
 }

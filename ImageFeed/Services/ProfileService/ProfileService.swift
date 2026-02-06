@@ -86,4 +86,7 @@ final class ProfileService {
         task.resume()
         
     }
+    func reset() {
+        profile = nil
+    }
 }

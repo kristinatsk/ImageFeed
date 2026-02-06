@@ -150,6 +150,13 @@ final class ProfileViewController: UIViewController {
     
     @objc
     private func logoutButtonTapped() {
+        ProfileLogoutService.shared.logout()
+        let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        let delegate = scene?.delegate as? SceneDelegate
         
+        let splash = SplashViewController()
+        
+        delegate?.window?.rootViewController = splash
+        delegate?.window?.makeKeyAndVisible()
     }
 }
