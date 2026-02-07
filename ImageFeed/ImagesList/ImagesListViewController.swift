@@ -153,21 +153,20 @@ extension ImagesListViewController: ImagesListCellDelegate {
         
         UIBlockingProgressHUD.show()
         imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { result in
-        
-            switch result {
-            case .success:
-                self.photos = self.imagesListService.photos
-                cell.setIsLiked(self.photos[indexPath.row].isLiked)
-                UIBlockingProgressHUD.dismiss()
-            case .failure:
-                UIBlockingProgressHUD.dismiss()
-                self.showLikeErrorAlert()
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self.photos = self.imagesListService.photos
+                    cell.setIsLiked(self.photos[indexPath.row].isLiked)
+                    UIBlockingProgressHUD.dismiss()
+                case .failure:
+                        UIBlockingProgressHUD.dismiss()
+                        self.showLikeErrorAlert()
+                    }
+                }
             }
-            
         }
-        
     }
-}
 
 extension ImagesListViewController {
     func showLikeErrorAlert() {

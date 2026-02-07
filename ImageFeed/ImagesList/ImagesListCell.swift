@@ -13,7 +13,7 @@ final class ImagesListCell: UITableViewCell {
     
     weak var delegate: ImagesListCellDelegate?
     
-    @IBAction func likeButtonClicked() {
+    @IBAction func likeButtonClicked(_ sender: UIButton) {
         delegate?.imageListCellDidTapLike(self)
     }
     

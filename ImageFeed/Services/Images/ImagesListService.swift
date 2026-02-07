@@ -15,9 +15,13 @@ final class ImagesListService {
             return nil
         }
         
+        guard let token = OAuth2TokenStorage.shared.token else {
+            return nil
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
-        request.setValue("Client-ID \(Constants.accessKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
     
@@ -62,7 +66,7 @@ final class ImagesListService {
     }
     
     func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
-        let requestPath = "https://api.unsplash.com/photos/\(photoId)/like"
+        let requestPath = "/photos/\(photoId)/like"
         let httpMethod = isLike ? "POST" : "DELETE"
         
         guard let request = makeImageRequest(path: requestPath, httpMethod: httpMethod) else {
