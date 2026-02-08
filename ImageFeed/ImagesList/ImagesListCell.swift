@@ -1,3 +1,4 @@
+//sprint_12_pr
 import UIKit
 
 protocol ImagesListCellDelegate: AnyObject {
@@ -29,6 +30,7 @@ final class ImagesListCell: UITableViewCell {
         removeAnimatedGradients()
         cellImage.image = nil
     }
+
 
     
     func showAnimatedGradient() {
