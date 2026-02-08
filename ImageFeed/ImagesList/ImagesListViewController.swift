@@ -41,16 +41,24 @@ final class ImagesListViewController: UIViewController {
     
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         let photo = photos[indexPath.row]
+        
+        cell.showAnimatedGradient()
+        
         cell.cellImage.kf.indicatorType = .activity
         let placeholder = UIImage(resource: .stub)
         
         cell.cellImage.kf.setImage(
             with: URL(string: photo.thumbImageURL),
             placeholder: placeholder
-        ) { [weak self] result in
+        ) { [weak self, weak cell] result in
         
-            guard let self = self else { return }
-            self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            guard
+                let self,
+                let cell,
+                let currentIndexPath = self.tableView.indexPath(for: cell),
+                currentIndexPath == indexPath
+            else { return }
+            cell.removeAnimatedGradients()
         }
         
         if let createdAt = photo.createdAt {

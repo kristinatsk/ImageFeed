@@ -46,13 +46,15 @@ final class ProfileViewController: UIViewController {
         return button
     }()
     
+    private var animationLayers: [CALayer] = []
+    
     private var profileImageServiceObserver: NSObjectProtocol?
                                                
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupUI()
-        
+        showAnimatedGradient()
         if let profile = ProfileService.shared.profile {
             updateProfileDetails(profile: profile)
         }
@@ -110,6 +112,41 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
+    private func showAnimatedGradient() {
+        removeAnimatedGradients()
+        
+        [profilePhotoView, nameLabel, loginLabel, descriptionLabel].forEach { view in
+            let gradient = CAGradientLayer()
+            gradient.frame = view.bounds
+            gradient.locations = [0, 0.1, 0.3]
+            gradient.colors = [
+                UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
+                UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
+                UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
+            ]
+            gradient.startPoint = CGPoint(x: 0, y: 0.5)
+            gradient.endPoint = CGPoint(x: 1, y: 0.5)
+            if view == profilePhotoView {
+                gradient.cornerRadius = view.bounds.height / 2
+            } else {
+                gradient.cornerRadius = 0
+            }
+            animationLayers.append(gradient)
+            view.layer.addSublayer(gradient)
+            
+            let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
+            gradientChangeAnimation.duration = 1.0
+            gradientChangeAnimation.repeatCount = .infinity
+            gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
+            gradientChangeAnimation.toValue = [0, 0.8, 1]
+            gradient.add(gradientChangeAnimation, forKey: "locationsChange")
+        }
+    }
+    
+    private func removeAnimatedGradients() {
+        animationLayers.forEach { $0.removeFromSuperlayer() }
+        animationLayers = []
+    }
 
     private func updateAvatar() {
         guard
@@ -128,7 +165,7 @@ final class ProfileViewController: UIViewController {
                                      placeholder: placeholderImage,
                                      options: [.forceRefresh]
         ) { result in
-            
+            self.removeAnimatedGradients()
             switch result {
             case .success(let value):
                 print(value.image)
