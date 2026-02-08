@@ -1,4 +1,3 @@
-//sprint_12_pr
 import UIKit
 
 protocol ImagesListCellDelegate: AnyObject {
