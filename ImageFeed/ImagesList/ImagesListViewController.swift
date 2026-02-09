@@ -2,11 +2,10 @@ import UIKit
 
 final class ImagesListViewController: UIViewController {
     
+    @IBOutlet private var tableView: UITableView!
+    private let imagesListService = ImagesListService.shared
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
     private var photos: [Photo] = []
-    private let imagesListService = ImagesListService.shared
-    
-    @IBOutlet private var tableView: UITableView!
     
     
     private lazy var dateFormatter: DateFormatter = {
@@ -98,7 +97,7 @@ final class ImagesListViewController: UIViewController {
 
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photos.count
+        photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -160,15 +159,15 @@ extension ImagesListViewController: ImagesListCellDelegate {
         
         
         UIBlockingProgressHUD.show()
-        imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { result in
+        imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
             DispatchQueue.main.async {
+                guard let self = self else { return }
+                UIBlockingProgressHUD.dismiss()
                 switch result {
                 case .success:
                     self.photos = self.imagesListService.photos
                     cell.setIsLiked(self.photos[indexPath.row].isLiked)
-                    UIBlockingProgressHUD.dismiss()
                 case .failure:
-                        UIBlockingProgressHUD.dismiss()
                         self.showLikeErrorAlert()
                     }
                 }

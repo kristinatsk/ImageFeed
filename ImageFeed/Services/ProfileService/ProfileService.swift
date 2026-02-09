@@ -9,7 +9,7 @@ struct Profile {
 
 struct ProfileResult: Codable {
     let firstName: String
-    let lastName: String
+    let lastName: String?
     let username: String
     let bio: String?
     
@@ -58,11 +58,14 @@ final class ProfileService {
         
             switch result {
             case .success(let result):
+                let fullName = [result.firstName, result.lastName]
+                    .compactMap { $0 }
+                    .joined(separator: " ")
                 
                     let profile = Profile(
                         username: result.username,
                         loginName: "@\(result.username)",
-                        name: "\(result.firstName) \(result.lastName)".trimmingCharacters(in: .whitespaces),
+                        name: fullName,
                         bio: result.bio
                     )
                     self?.profile = profile
