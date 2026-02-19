@@ -6,6 +6,12 @@ enum Constants {
     static let redirectURI = "urn:ietf:wg:oauth:2.0:oob"
     static let accessScope = "public+read_user+write_likes"
     static let defaultBaseURL = URL(string: "https://api.unsplash.com")
-    static let oauthTokenURL = URL(string: "https://unsplash.com/oauth/token")!
+    static var oauthTokenURL: URL {
+        guard let url = URL(string: "https://unsplash.com/oauth/token") else {
+            assertionFailure("Invalid OAuth token URL")
+            return URL(fileURLWithPath: "/")
+        }
+        return url
+    }
 
 }
