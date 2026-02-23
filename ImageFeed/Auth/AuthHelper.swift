@@ -6,9 +6,10 @@ protocol AuthHelperProtocol {
 }
 
 final class AuthHelper: AuthHelperProtocol {
+  
     let configuration: AuthConfiguration
     
-    init(configuration: AuthConfiguration = .standart) {
+    init(configuration: AuthConfiguration = .standard) {
         self.configuration = configuration
     }
     
@@ -23,6 +24,11 @@ final class AuthHelper: AuthHelperProtocol {
             URLQueryItem(name: "scope", value: Constants.accessScope)
         ]
         return urlComponents.url
+    }
+    
+    func authRequest() -> URLRequest? {
+        guard let url = authURL() else { return nil }
+        return URLRequest(url: url)
     }
     
     func code(from url: URL) -> String? {

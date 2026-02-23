@@ -14,6 +14,7 @@ enum Constants {
         }
         return url
     }
+}
     
     struct AuthConfiguration {
         let accessKey: String
@@ -32,7 +33,7 @@ enum Constants {
             self.authURLString = authURLString
         }
         
-        static var standart: AuthConfiguration {
+        static var standard: AuthConfiguration {
             return AuthConfiguration(accessKey: Constants.accessKey,
                                      secretKey: Constants.secretKey,
                                      redirectURI: Constants.redirectURI,
@@ -42,4 +43,4 @@ enum Constants {
         }
     }
 
-}
+
