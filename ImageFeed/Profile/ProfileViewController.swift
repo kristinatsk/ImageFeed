@@ -1,7 +1,18 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+public protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfileViewPresenterProtocol? { get set }
+    
+    func displayProfile(profile: Profile)
+    func displayAvatar(url: URL?)
+    func navigateToSplash()
+    func showLogoutConfirmation()
+}
+
+final class ProfileViewController: UIViewController & ProfileViewControllerProtocol {
+    var presenter: ProfileViewPresenterProtocol?
+    
     private let profilePhotoView: UIImageView = {
         let imageView = UIImageView(image: UIImage(resource: .profilePhoto))
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -11,6 +22,7 @@ final class ProfileViewController: UIViewController {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.text = "Имя не указано"
+        label.accessibilityIdentifier = "ProfileNameLabel"
         label.textColor = UIColor(hex: "#FFFFFF")
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -20,6 +32,7 @@ final class ProfileViewController: UIViewController {
     private let loginLabel: UILabel = {
         let label = UILabel()
         label.text = "@неизвестный_пользователь"
+        label.accessibilityIdentifier = "ProfileLoginLabel"
         label.textColor = UIColor(hex: "#AEAFB4")
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -42,36 +55,29 @@ final class ProfileViewController: UIViewController {
             action: #selector(logoutButtonTapped)
         )
         button.tintColor = UIColor(hex: "#F56B6C")
+        button.accessibilityIdentifier = "ProfileLogoutButton"
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     private var animationLayers: [CALayer] = []
     
-    private var profileImageServiceObserver: NSObjectProtocol?
                                                
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupUI()
-        showAnimatedGradient()
-        if let profile = ProfileService.shared.profile {
-            updateProfileDetails(profile: profile)
+        if presenter == nil {
+            presenter = ProfileViewPresenter()
+            presenter?.view = self
         }
         
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                
-                guard let self else { return }
-                self.updateAvatar()
-                
-            }
-        updateAvatar()
-        
+        setupUI()
+
+        if !UITest.profile {
+            showAnimatedGradient()
+        }
+
+        presenter?.viewDidLoad()
     }
     
     
@@ -113,6 +119,7 @@ final class ProfileViewController: UIViewController {
     }
     
     private func showAnimatedGradient() {
+        
         removeAnimatedGradients()
         
         [profilePhotoView, nameLabel, loginLabel, descriptionLabel].forEach { view in
@@ -148,12 +155,12 @@ final class ProfileViewController: UIViewController {
         animationLayers = []
     }
 
-    private func updateAvatar() {
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-        print("imageURL: \(url)")
+    func displayAvatar(url: URL?) {
+        if UITest.profile {
+                removeAnimatedGradients()
+                return
+        }
+        guard let url else { return }
         
         let placeholderImage = UIImage(systemName: "person.circle.fill")?
             .withTintColor(.lightGray, renderingMode: .alwaysOriginal)
@@ -179,7 +186,7 @@ final class ProfileViewController: UIViewController {
     }
 
     
-    private func updateProfileDetails(profile: Profile) {
+     func displayProfile(profile: Profile) {
         nameLabel.text = profile.name.isEmpty ? "Имя не указано" : profile.name
         loginLabel.text = profile.loginName.isEmpty ? "@пользователь не указан" : profile.loginName
         descriptionLabel.text = (profile.bio?.isEmpty ?? true) ? "Профиль пуст" : profile.bio
@@ -187,16 +194,17 @@ final class ProfileViewController: UIViewController {
     
     @objc
     private func logoutButtonTapped() {
-        showLogoutAlert()
+        presenter?.didTapLogout()
     }
-    private func showLogoutAlert() {
+    
+     func showLogoutConfirmation() {
         let alert = UIAlertController (
             title: "Пока, пока!",
             message: "Уверены, что хотите выйти?",
             preferredStyle: .alert
         )
         let yesAction = UIAlertAction(title: "Да", style: .destructive) { [weak self] _ in
-            self?.performLogout()
+            self?.presenter?.didConfirmLogout()
         }
         let noAction = UIAlertAction(title: "Нет", style: .cancel)
         
@@ -205,9 +213,8 @@ final class ProfileViewController: UIViewController {
         
         present(alert, animated: true)
     }
-    private func performLogout() {
-        ProfileLogoutService.shared.logout()
-        
+    
+    func navigateToSplash() {
         guard
         let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
         let window = windowScene.windows.first
