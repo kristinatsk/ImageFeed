@@ -8,12 +8,13 @@ public protocol ImagesListViewControllerProtocol: AnyObject {
     func showLoading()
     func hideLoading()
     func displayError(message: String)
+    func reloadData()
  
     
 }
 
 final class ImagesListViewController: UIViewController & ImagesListViewControllerProtocol {
-
+ 
     
     @IBOutlet private var tableView: UITableView!
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
@@ -41,28 +42,42 @@ final class ImagesListViewController: UIViewController & ImagesListViewControlle
         presenter?.viewDidLoad()
     }
     
-    
+    func reloadData() {
+        DispatchQueue.main.async {
+                self.tableView.reloadData()
+                self.tableView.layoutIfNeeded()
+            }
+    }
 
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         guard let photo = presenter?.photo(at: indexPath.row) else { return }
         
         cell.showAnimatedGradient()
         
-        cell.cellImage.kf.indicatorType = .activity
-        let placeholder = UIImage(resource: .stub)
-        
-        cell.cellImage.kf.setImage(
-            with: URL(string: photo.thumbImageURL),
-            placeholder: placeholder
-        ) { [weak self, weak cell] result in
-        
-            guard
-                let self,
-                let cell,
-                let currentIndexPath = self.tableView.indexPath(for: cell),
-                currentIndexPath == indexPath
-            else { return }
+        if UITest.feed {
+
+            cell.cellImage.image = UIImage(resource: .stub)
             cell.removeAnimatedGradients()
+
+        } else {
+
+            cell.cellImage.kf.indicatorType = .activity
+            let placeholder = UIImage(resource: .stub)
+
+            cell.cellImage.kf.setImage(
+                with: URL(string: photo.thumbImageURL),
+                placeholder: placeholder
+            ) { [weak self, weak cell] _ in
+
+                guard
+                    let self,
+                    let cell,
+                    let currentIndexPath = self.tableView.indexPath(for: cell),
+                    currentIndexPath == indexPath
+                else { return }
+
+                cell.removeAnimatedGradients()
+            }
         }
         
         if let createdAt = photo.createdAt {
@@ -71,8 +86,9 @@ final class ImagesListViewController: UIViewController & ImagesListViewControlle
             cell.dateLabel.text = ""
         }
         
-        let likeImage = photo.isLiked ? UIImage(resource: .likeButtonActive) : UIImage(resource: .likeButtonNoActive)
-        cell.likeButton.setImage(likeImage, for: .normal)
+//        let likeImage = photo.isLiked ? UIImage(resource: .likeButtonActive) : UIImage(resource: .likeButtonNoActive)
+//        cell.likeButton.setImage(likeImage, for: .normal)
+        cell.setIsLiked(photo.isLiked)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -104,11 +120,13 @@ final class ImagesListViewController: UIViewController & ImagesListViewControlle
     }
     
     func showLoading() {
-        UIBlockingProgressHUD.show()
+        if UITest.feed { return }
+            UIBlockingProgressHUD.show()
     }
     
     func hideLoading() {
-        UIBlockingProgressHUD.dismiss()
+        if UITest.feed { return }
+           UIBlockingProgressHUD.dismiss()
     }
     
     func displayError(message: String) {

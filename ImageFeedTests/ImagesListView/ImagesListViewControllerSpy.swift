@@ -2,6 +2,8 @@ import ImageFeed
 import Foundation
 
 final class ImagesListViewControllerSpy: ImagesListViewControllerProtocol {
+    
+    
     var presenter: ImageFeed.ImagesListViewPresenterProtocol?
     var showLoadingCalled: Bool = false
     
@@ -14,10 +16,12 @@ final class ImagesListViewControllerSpy: ImagesListViewControllerProtocol {
     var receivedInsertedIndexes: [Int]?
     
     var displayErrorCalled: Bool = false
+    
+    var reloadDataCalled = false
 
     
     func updateTableViewAnimated(insertedIndexes: [Int]) {
-        updatePhotoCalled = true
+        updateTableViewAnimatedCalled = true
         receivedInsertedIndexes = insertedIndexes
     }
     
@@ -36,6 +40,9 @@ final class ImagesListViewControllerSpy: ImagesListViewControllerProtocol {
     
     func displayError(message: String) {
         displayErrorCalled = true
+    }
+    func reloadData() {
+        reloadDataCalled = true
     }
     
     

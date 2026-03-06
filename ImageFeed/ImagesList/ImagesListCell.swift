@@ -20,8 +20,16 @@ final class ImagesListCell: UITableViewCell {
         delegate?.imageListCellDidTapLike(self)
     }
     
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        likeButton.isAccessibilityElement = true
+        likeButton.accessibilityIdentifier = "LikeButton"
+        cellImage.isUserInteractionEnabled = false
+    }
+    
     func setIsLiked(_ isLiked: Bool) {
         likeButton.setImage(isLiked ? .likeButtonActive : .likeButtonNoActive, for: .normal)
+        likeButton.accessibilityValue = isLiked ? "liked" : "notLiked"
     }
     
     override func prepareForReuse() {
@@ -33,6 +41,8 @@ final class ImagesListCell: UITableViewCell {
 
     
     func showAnimatedGradient() {
+        if UITest.feed { return }
+        
         removeAnimatedGradients()
         
         let gradient = CAGradientLayer()

@@ -44,6 +44,17 @@ final class ProfileViewPresenter: ProfileViewPresenterProtocol {
         }
     
     func viewDidLoad() {
+        if UITest.profile {
+                let profile = Profile(
+                    username: "test_user",
+                    loginName: "@test_user", name: "Test User",
+                    bio: "Test bio"
+                )
+
+                view?.displayProfile(profile: profile)
+                view?.displayAvatar(url: nil)
+                return
+            }
         guard let profile = profileService.profile else {
             return
         }

@@ -22,12 +22,14 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
     
     init(helper: ImagesListHelperProtocol = ImagesListHelper()) {
         self.helper = helper
-        observer = NotificationCenter.default.addObserver(
-            forName: ImagesListService.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.didReceivePhotosUpdate()
+        if !UITest.feed && !UITest.profile {
+            observer = NotificationCenter.default.addObserver(
+                forName: ImagesListService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.didReceivePhotosUpdate()
+            }
         }
     }
     
@@ -39,6 +41,31 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
     }
     
     func viewDidLoad() {
+        if UITest.feed {
+            photos = [
+                Photo(
+                    id: "1",
+                    size: CGSize(width: 300, height: 300),
+                    createdAt: Date(),
+                    welcomeDescription: "Test",
+                    thumbImageURL: "https://via.placeholder.com/300",
+                    largeImageURL: "https://via.placeholder.com/600",
+                    isLiked: false
+                ),
+                Photo(
+                    id: "2",
+                    size: CGSize(width: 300, height: 300),
+                    createdAt: Date(),
+                    welcomeDescription: "Test",
+                    thumbImageURL: "https://via.placeholder.com/300",
+                    largeImageURL: "https://via.placeholder.com/600",
+                    isLiked: false
+                )
+            ]
+
+            view?.reloadData()
+            return
+        }
 
         view?.showLoading()
         helper.fetchNextPage()
@@ -73,21 +100,32 @@ final class ImagesListViewPresenter: ImagesListViewPresenterProtocol {
         view?.hideLoading()
     }
     func didTapLike(at index: Int) {
+        
         guard photos.indices.contains(index) else { return }
+
+        if UITest.feed {
+            var photo = photos[index]
+            photo.isLiked.toggle()
+            photos[index] = photo
+            view?.updatePhoto(at: index)
+            return
+        }
+
         let photo = photos[index]
-        
+
         view?.showLoading()
-        
+
         helper.toggleLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
             guard let self else { return }
+
             DispatchQueue.main.async {
                 self.view?.hideLoading()
-                
+
                 switch result {
                 case .success:
                     self.photos = self.helper.photos
                     self.view?.updatePhoto(at: index)
-                    
+
                 case .failure:
                     self.view?.displayError(message: "Что-то пошло не так")
                 }

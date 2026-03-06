@@ -14,10 +14,19 @@ final class UIBlockingProgressHUD {
     }
     
     static func show() {
+        if UITest.profile || UITest.feed {
+            return
+        }
+        
         window?.isUserInteractionEnabled = false
         ProgressHUD.animate()
     }
+    
     static func dismiss() {
+        if UITest.profile || UITest.feed {
+            return
+        }
+        
         window?.isUserInteractionEnabled = true
         ProgressHUD.dismiss()
     }

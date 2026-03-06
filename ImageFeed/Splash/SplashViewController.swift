@@ -9,7 +9,19 @@ final class SplashViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        if UITest.auth {
+                ProfileLogoutService.shared.logout()
+        }
+        if UITest.feed {
+            switchToTabBarController()
+            return
+        }
+        if UITest.profile {
+            switchToTabBarController(selectedIndex: 1)
+            return
+        }
         setupImageView()
+        
         if let token = storage.token {
             fetchProfile(token)
         } else {
@@ -52,7 +64,7 @@ final class SplashViewController: UIViewController {
         
     }
     
-    private func switchToTabBarController() {
+    private func switchToTabBarController(selectedIndex: Int = 0) {
         guard
             let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
             let window = windowScene.windows.first
@@ -64,7 +76,12 @@ final class SplashViewController: UIViewController {
         let tabBarController = UIStoryboard(name: "Main", bundle: .main)
             .instantiateViewController(withIdentifier: "TabBarViewController")
         
+        if let tabBar = tabBarController as? UITabBarController {
+                tabBar.selectedIndex = selectedIndex
+            }
+        
         window.rootViewController = tabBarController
+        window.makeKeyAndVisible()
     }
     
     private func fetchProfile(_ token: String) {

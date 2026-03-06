@@ -22,6 +22,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.text = "Имя не указано"
+        label.accessibilityIdentifier = "ProfileNameLabel"
         label.textColor = UIColor(hex: "#FFFFFF")
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -31,6 +32,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     private let loginLabel: UILabel = {
         let label = UILabel()
         label.text = "@неизвестный_пользователь"
+        label.accessibilityIdentifier = "ProfileLoginLabel"
         label.textColor = UIColor(hex: "#AEAFB4")
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -53,6 +55,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
             action: #selector(logoutButtonTapped)
         )
         button.tintColor = UIColor(hex: "#F56B6C")
+        button.accessibilityIdentifier = "ProfileLogoutButton"
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -63,8 +66,17 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if presenter == nil {
+            presenter = ProfileViewPresenter()
+            presenter?.view = self
+        }
+        
         setupUI()
-        showAnimatedGradient()
+
+        if !UITest.profile {
+            showAnimatedGradient()
+        }
+
         presenter?.viewDidLoad()
     }
     
@@ -107,6 +119,7 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     }
     
     private func showAnimatedGradient() {
+        
         removeAnimatedGradients()
         
         [profilePhotoView, nameLabel, loginLabel, descriptionLabel].forEach { view in
@@ -143,6 +156,10 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     }
 
     func displayAvatar(url: URL?) {
+        if UITest.profile {
+                removeAnimatedGradients()
+                return
+        }
         guard let url else { return }
         
         let placeholderImage = UIImage(systemName: "person.circle.fill")?
